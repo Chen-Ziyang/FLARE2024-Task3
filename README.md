@@ -12,7 +12,7 @@ The details of our method are described in our [paper](https://openreview.net/fo
 Our trained model is available at Our trained model is available at [RESULTS_FOLDER](./RESULTS_FOLDER)
 
 ## Environments and Requirements:
-Install nnU-Net [1] as below. You should meet the requirements of nnUNet, our method does not need any additional requirements. For more details, please refer to https://github.com/MIC-DKFZ/nnUNet
+Install nnU-Net as below. You should meet the requirements of nnUNet, our method does not need any additional requirements. For more details, please refer to https://github.com/MIC-DKFZ/nnUNet
 ```
 git clone https://github.com/MIC-DKFZ/nnUNet.git
 cd nnUNet
