@@ -33,7 +33,7 @@ class nnUNetTrainerV2_FLARE_Small_DDP(nnUNetTrainerV2_DDP):
         self.stage_num = 5
         self.base_num_features = 16
         self.max_num_features = 256
-        self.max_num_epochs = 100
+        self.max_num_epochs = 1000
         self.save_every = self.max_num_epochs // 10
 
         # 取消验证，加速训练
@@ -75,115 +75,45 @@ class nnUNetTrainerV2_FLARE_Small_DDP(nnUNetTrainerV2_DDP):
         self.data_aug_params["do_elastic"] = True
 
 
-# class nnUNetTrainerV2_FLARE_Pseudo_DDP(nnUNetTrainerV2_DDP_UDA):
-#     def initialize_network(self):
-#         self.conv_per_stage = 3
-#         self.base_num_features = 64
-#         self.max_num_features = 1024
-#         self.max_num_epochs = 1000
-#
-#         # 取消验证，加速训练
-#         self.num_val_batches_per_epoch = 1
-#         self.save_best_checkpoint = False
-#
-#         if self.threeD:
-#             conv_op = nn.Conv3d
-#             dropout_op = nn.Dropout3d
-#             norm_op = nn.InstanceNorm3d
-#         else:
-#             conv_op = nn.Conv2d
-#             dropout_op = nn.Dropout2d
-#             norm_op = nn.InstanceNorm2d
-#
-#         norm_op_kwargs = {'eps': 1e-5, 'affine': True}
-#         dropout_op_kwargs = {'p': 0, 'inplace': True}
-#         net_nonlin = nn.LeakyReLU
-#         net_nonlin_kwargs = {'negative_slope': 1e-2, 'inplace': True}
-#         self.network = Generic_UNet(self.num_input_channels, self.base_num_features, self.num_classes,
-#                                     len(self.net_num_pool_op_kernel_sizes),
-#                                     self.conv_per_stage, 2, conv_op, norm_op, norm_op_kwargs, dropout_op,
-#                                     dropout_op_kwargs,
-#                                     net_nonlin, net_nonlin_kwargs, True, False, lambda x: x, InitWeights_He(1e-2),
-#                                     self.net_num_pool_op_kernel_sizes, self.net_conv_kernel_sizes, False, True, True,
-#                                     self.max_num_features)
-#         if torch.cuda.is_available():
-#             self.network.cuda()
-#         self.network.inference_apply_nonlin = softmax_helper
-#
-#     def initialize_optimizer_and_scheduler(self):
-#         assert self.network is not None, "self.initialize_network must be called first"
-#         self.optimizer = torch.optim.SGD(self.network.parameters(), self.initial_lr, weight_decay=self.weight_decay,
-#                                          momentum=0.99, nesterov=True)
-#         self.lr_scheduler = None
-#
-#     def setup_DA_params(self):
-#         super().setup_DA_params()
-#         self.data_aug_params["do_mirror"] = False
-#         self.data_aug_params["do_elastic"] = True
-#
-#     def maybe_update_lr(self, epoch=None):
-#         if epoch is None:
-#             ep = self.epoch + 1
-#         else:
-#             ep = epoch
-#         self.optimizer.param_groups[0]['lr'] = poly_lr(ep, self.max_num_epochs, self.initial_lr, 0.9)
-#         self.print_to_log_file("lr:", np.round(self.optimizer.param_groups[0]['lr'], decimals=6))
-#
-#     def run_iteration(self, src_data_generator, tar_data_generator, do_backprop=True, run_online_evaluation=False):
-#         # Get Source&Target Data
-#         src_data_dict = next(src_data_generator)
-#         src_data = src_data_dict['data']
-#         src_target = src_data_dict['target']
-#
-#         tar_data_dict = next(tar_data_generator)
-#         tar_data = tar_data_dict['data']
-#         tar_target = tar_data_dict['target']
-#
-#         # To Tensor
-#         src_data = maybe_to_torch(src_data)
-#         src_target = maybe_to_torch(src_target)
-#         tar_data = maybe_to_torch(tar_data)
-#         tar_target = maybe_to_torch(tar_target)
-#
-#         # To CUDA
-#         if torch.cuda.is_available():
-#             src_data = to_cuda(src_data, gpu_id=None)
-#             src_target = to_cuda(src_target, gpu_id=None)
-#             tar_data = to_cuda(tar_data, gpu_id=None)
-#             tar_target = to_cuda(tar_target, gpu_id=None)
-#
-#         self.optimizer.zero_grad()
-#
-#         if self.fp16:
-#             with autocast():
-#                 src_output = self.network(src_data)
-#                 tar_output = self.network(tar_data)
-#                 del src_data, tar_data
-#                 l = 0.5 * self.compute_loss(src_output, src_target) + self.compute_loss(tar_output, tar_target)
-#
-#             if do_backprop:
-#                 self.amp_grad_scaler.scale(l).backward()
-#                 self.amp_grad_scaler.unscale_(self.optimizer)
-#                 torch.nn.utils.clip_grad_norm_(self.network.parameters(), 12)
-#                 self.amp_grad_scaler.step(self.optimizer)
-#                 self.amp_grad_scaler.update()
-#         else:
-#             src_output = self.network(src_data)
-#             tar_output = self.network(tar_data)
-#             del src_data, tar_data
-#             l = 0.5 * self.compute_loss(src_output, src_target) + self.compute_loss(tar_output, tar_target)
-#
-#             if do_backprop:
-#                 l.backward()
-#                 torch.nn.utils.clip_grad_norm_(self.network.parameters(), 12)
-#                 self.optimizer.step()
-#
-#         if run_online_evaluation:
-#             self.run_online_evaluation(tar_output, tar_target)
-#             self.run_another_online_evaluation(src_output, src_target)
-#
-#         del src_target, tar_target
-#         return l.detach().cpu().numpy()
+class nnUNetTrainerV2_FLARE_MR_DDP(nnUNetTrainerV2_DDP):
+    def initialize_network(self):
+        self.conv_per_stage = 3
+        self.base_num_features = 32
+        self.max_num_features = 512
+        self.max_num_epochs = 1000
+
+        # 取消验证，加速训练
+        self.num_val_batches_per_epoch = 1
+        self.save_best_checkpoint = False
+
+        if self.threeD:
+            conv_op = nn.Conv3d
+            dropout_op = nn.Dropout3d
+            norm_op = nn.InstanceNorm3d
+        else:
+            conv_op = nn.Conv2d
+            dropout_op = nn.Dropout2d
+            norm_op = nn.InstanceNorm2d
+
+        norm_op_kwargs = {'eps': 1e-5, 'affine': True}
+        dropout_op_kwargs = {'p': 0, 'inplace': True}
+        net_nonlin = nn.LeakyReLU
+        net_nonlin_kwargs = {'negative_slope': 1e-2, 'inplace': True}
+        self.network = Generic_UNet(self.num_input_channels, self.base_num_features, self.num_classes,
+                                    len(self.net_num_pool_op_kernel_sizes),
+                                    self.conv_per_stage, 2, conv_op, norm_op, norm_op_kwargs, dropout_op,
+                                    dropout_op_kwargs,
+                                    net_nonlin, net_nonlin_kwargs, True, False, lambda x: x, InitWeights_He(1e-2),
+                                    self.net_num_pool_op_kernel_sizes, self.net_conv_kernel_sizes, False, True, True,
+                                    self.max_num_features)
+        if torch.cuda.is_available():
+            self.network.cuda()
+        self.network.inference_apply_nonlin = softmax_helper
+
+    def setup_DA_params(self):
+        super().setup_DA_params()
+        self.data_aug_params["do_mirror"] = False
+        self.data_aug_params["do_elastic"] = True
 
 
 class nnUNetTrainerV2_FLARE_Pseudo_DDP(nnUNetTrainerV2_DDP_UDA):
