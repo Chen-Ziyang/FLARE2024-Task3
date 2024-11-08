@@ -1,4 +1,4 @@
-# Solution of Team NPUSAIIP for MICCAI 2024 Challenge FLARE Task3
+# Solution of Team NPUSAIIP for [MICCAI 2024 Challenge FLARE Task3](https://www.codabench.org/competitions/2296/)
 <div align="center">
   <img width="90%" alt="Certificate" src="figures/FLARE2024_Task3.JPG">
 </div>
@@ -8,6 +8,7 @@
 
 Built upon [MIC-DKFZ/nnUNet](https://github.com/MIC-DKFZ/nnUNet).
 Part of the code is revised from the Pytorch implementation of [https://github.com/Ziyan-Huang/FLARE22](https://github.com/Ziyan-Huang/FLARE22/).
+The key idea of the UDA phase is inspired by our [previous work](https://github.com/Chen-Ziyang/TriLA/).
 
 This repository provides the solution of team npusaiip for [MICCAI 2024 Challenge FLARE Task3](https://www.codabench.org/competitions/2296/). 
 
