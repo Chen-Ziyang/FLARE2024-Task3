@@ -1,10 +1,12 @@
-# Solution of Team NPUSAIIP for [MICCAI 2024 Challenge FLARE Task3](https://www.codabench.org/competitions/2296/)
+# Solution of Team NPUSAIIP for MICCAI 2024 Challenge FLARE Task3
 <div align="center">
   <img width="90%" alt="Certificate" src="figures/FLARE2024_Task3.JPG">
 </div>
 
 **Rethinking nnU-Net for Cross-Modality Unsupervised Domain Adaptation in Abdominal Organ Segmentation** \
 *Ziyang Chen, Xiaoyu Bai, Zhisong Wang, Yiwen Ye, Yongsheng Pan, and Yong Xia* 
+
+Thanks the organizers for organizing this [challenge](https://www.codabench.org/competitions/2296/).
 
 Built upon [MIC-DKFZ/nnUNet](https://github.com/MIC-DKFZ/nnUNet).
 Part of the code is revised from the Pytorch implementation of [https://github.com/Ziyan-Huang/FLARE22](https://github.com/Ziyan-Huang/FLARE22/).
