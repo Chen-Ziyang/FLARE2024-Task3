@@ -16,7 +16,7 @@ This repository provides the solution of team npusaiip for [MICCAI 2024 Challeng
 
 The details of our method are described in our [paper](https://openreview.net/forum?id=dI5SeoVkV5). 
 
-Our trained model is available at Our trained model is available at [RESULTS_FOLDER](./RESULTS_FOLDER)
+Our trained model is available at [RESULTS_FOLDER](./RESULTS_FOLDER)
 
 ## Environments and Requirements:
 Install nnU-Net as below. You should meet the requirements of nnUNet, our method does not need any additional requirements. For more details, please refer to https://github.com/MIC-DKFZ/nnUNet
